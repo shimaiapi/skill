@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatGPT 桌面中文与启动修复"
+  short_description: "仅调整 Windows 应用网络，适配版本并验证中文、启动和更新"
+  default_prompt: "使用 $chatgpt-desktop-local-repair 检查这台电脑的 ChatGPT/Codex 桌面版，仅调整应用网络修复中文与启动慢，并验证更新功能。"

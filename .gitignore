@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.zip
+*.pem
+*.key
+proxy.pid
+proxy.log
+proxy-error.log
+compatibility.json
+installation.json

@@ -8,13 +8,19 @@
 
 官方当前 Windows 使用说明：[Windows desktop](https://learn.chatgpt.com/docs/app/windows)。以下内部开关来自对应版本实测，**不是官方稳定配置接口**。
 
+## 当前会话内的部署
+
+当 agent 就运行在待修复的 ChatGPT/Codex 内，先遵循 SKILL.md 的会话保护流程；不能为了达到运行验证条件而终止当前会话。首次安装通常可在应用运行时完成，安装器本身不会关闭应用。现有修复升级若需停止服务，则只暂存文件和交接步骤，待用户退出后执行；当前会话内不要直接调用 Remove.ps1 来准备重装。
+
+交接记录 `pending-validation.md` 放在本次输出/暂存目录，不放入上游 skill 源码。包含下一次使用的入口、尚未执行的 UI/包身份/更新检查，以及用户重新打开后发送的“继续验证中文和更新，不要重启应用”。不将未验证项记为通过；启动耗时未测量就写未测量。
+
 ## 部署与恢复
 
 用户账户需已安装对应 MSIX，Node.js 18+ 在 PATH。不要默认获得管理员权限，也无需管理员运行。
 
 - 安装前：`Install.ps1 -CheckOnly`，输出签名检查后的应用路径、包版本、ASAR 结构证据。
 - 安装：`Install.ps1`；默认目录 `%LOCALAPPDATA%\OpenAI\ChatGPTDesktopLocalRepair`。创建当前用户桌面“ChatGPT 中文启动”。安装不会自动重启用户应用。
-- 实测：退出托盘实例，从新增入口启动。版本每次动态解析；升级后首次启动重新检查 ASAR。每次启动只使用此进程的 PAC/SPKI 参数，常规官方入口不会使用这些参数。
+- 实测：同应用会话由用户手动退出托盘实例、从新增入口启动；独立控制会话才由 agent 重启。版本每次动态解析；升级后首次启动重新检查 ASAR。每次启动只使用此进程的 PAC/SPKI 参数，常规官方入口不会使用这些参数。
 - 移除：先完全退出应用，再运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "安装目录\Remove.ps1"`；恢复使用官方入口。不会删除用户聊天、项目或第三方 API 配置。
 - 证书有效期一年；到期需要退出应用、移除本辅助方案后重新安装。安装生成新密钥，不在 skill 或 ZIP 中附带密钥。
 - 端口18769与其他方案冲突时先确认归属。不要终止未知进程；只能在用户要求替换方案时移除已识别的旧方案。
@@ -28,7 +34,7 @@
 2. **原生身份与 UI**：在交互桌面启动实际应用；查其主进程 PID，运行 `ProcessIdentity.ps1 -TargetProcessId PID`。结果应等于 `Get-AppxPackage OpenAI.Codex` 的 PackageFamilyName，不能是 NO_PACKAGE。确认中文菜单、侧栏和设置主体，不只看语言下拉框。原先聊天/项目/模型配置仍可见；在用户允许发送测试请求时验证第三方 API。没有发送测试请求时明确未端到端验证模型请求，不额外索要 API Key。
 3. **更新与清理**：实际“帮助→检查更新”。成功证据是“已是最新版本”或显示可用版本；网络错误只证明更新器已初始化，不能声称更新成功。不要点击下载/安装新版本，除非用户授权升级。完成后检查没有 `--remote-debugging-port`，临时端口关闭，任务与临时目录清除。原生更新弹窗可能仍为英文，这与主界面语言验证不同。
 
-必要时临时 `Launch.ps1 -DiagnosticPort 空闲端口`，只使用回环 CDP。Renderer 读取最小状态：document.documentElement.lang，是否包含中文菜单，Statsig readiness；不输出 document.body.innerText 的整个内容（可能包含聊天）。截图同样先考虑是否包含敏感内容。
+仅在独立控制会话中，必要时临时 `Launch.ps1 -DiagnosticPort 空闲端口`，只使用回环 CDP。同应用会话优先检查现有 UI/进程和日志，不为开启或关闭 CDP 重启当前应用。Renderer 读取最小状态：document.documentElement.lang，是否包含中文菜单，Statsig readiness；不输出 document.body.innerText 的整个内容（可能包含聊天）。截图同样先考虑是否包含敏感内容。
 
 Windows 日志可能在 `%LOCALAPPDATA%\Packages\<PackageFamily>\LocalCache\Local\Codex\Logs`，也可能在 `%LOCALAPPDATA%\Codex\Logs`。只筛选相关 PID 和 updater/Statsig 事件，避免整份日志泄露数据。实测更新成功日志：`[windows-offers] Windows update eligibility ... hasUpdate=false source=store`。
 

@@ -8,18 +8,26 @@
 
 仅调整应用网络，保留官方应用文件、第三方模型 API 配置及系统网络设置。包含版本探测、每台电脑独立生成的本地证书、保留 Windows 包身份的启动器、便携安装包生成和卸载流程。
 
-### 一句话安装
+### 一句话安装或更新
 
 在 Codex agent 中发送：
 
 ```text
-使用 $skill-installer 安装：https://github.com/shimaiapi/skill/tree/main/chatgpt-desktop-local-repair
+从 https://github.com/shimaiapi/skill/tree/main/chatgpt-desktop-local-repair 安装或更新 chatgpt-desktop-local-repair skill；已安装则先暂存下载并备份旧版后替换，只更新技能文件，不重启当前应用。
 ```
 
-安装后下一轮调用：
+安装器默认不会覆盖已存在目录；上述更新指令要求 agent 暂存下载、核对并备份替换，而不是直接重复安装。更新 skill 不会自动升级已部署的语言服务。
+
+安装或更新后下一轮调用：
 
 ```text
-使用 $chatgpt-desktop-local-repair 修复当前 Windows 应用的中文和启动慢，仅调整应用网络，并验证更新功能。
+使用 $chatgpt-desktop-local-repair 修复当前 Windows 应用的中文和启动慢，仅调整应用网络；若目标承载当前会话，先完成准备且不要重启，待我手动重新打开后继续验证中文和更新。
+```
+
+也可以一句话安装/更新并开始处理：
+
+```text
+从 https://github.com/shimaiapi/skill/tree/main/chatgpt-desktop-local-repair 安装或更新 skill（已有版本先备份替换），再用它修复当前 Windows 应用的中文和启动慢；不得中断当前会话，需要重启时先交付手动步骤，待我重新打开后继续验证。
 ```
 
 ### 兼容范围
@@ -37,7 +45,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\chatgpt-desktop-local-
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\chatgpt-desktop-local-repair\assets\windows\Install.ps1
 ```
 
-完全退出应用（包括托盘）后，使用新增的“ChatGPT 中文启动”桌面入口。安装 skill 本身不会自动安装辅助服务。
+如果正在目标应用里执行，请先保存本轮交接结果，再手动完全退出应用（包括托盘），使用新增的“ChatGPT 中文启动”桌面入口。重新打开后回到原聊天发送“继续验证中文和更新，不要重启应用”。安装 skill 本身不会自动安装辅助服务。
 
 移除时先退出应用，再运行安装目录中的 `Remove.ps1`；默认目录为 `%LOCALAPPDATA%\OpenAI\ChatGPTDesktopLocalRepair`。详细验证、适配与限制见 [Windows 参考](chatgpt-desktop-local-repair/references/windows.md)。
 
